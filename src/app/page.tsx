@@ -1,103 +1,180 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+import { useExpenses } from '@/hooks/useExpenses';
+import { SummaryCard } from '@/components/SummaryCard';
+import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { useRouter } from 'next/navigation';
+import {
+  DollarSign,
+  Calendar,
+  PieChart,
+  Plus,
+  TrendingUp,
+  Download
+} from 'lucide-react';
+import { exportToCSV } from '@/utils/export';
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+export default function Dashboard() {
+  const { expenses, loading, getSummary } = useExpenses();
+  const router = useRouter();
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-300 rounded mb-6"></div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="h-32 bg-gray-300 rounded"></div>
+            ))}
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
+    );
+  }
+
+  const summary = getSummary();
+
+  const handleExport = () => {
+    if (expenses.length === 0) {
+      alert('No expenses to export');
+      return;
+    }
+    exportToCSV(expenses);
+  };
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-gray-600 mt-1">
+            Track your expenses and manage your budget
+          </p>
+        </div>
+        <div className="flex gap-3 mt-4 sm:mt-0">
+          <Button
+            variant="outline"
+            onClick={handleExport}
+            disabled={expenses.length === 0}
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Export CSV
+          </Button>
+          <Button onClick={() => router.push('/add')}>
+            <Plus className="w-4 h-4 mr-2" />
+            Add Expense
+          </Button>
+        </div>
+      </div>
+
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <SummaryCard
+          title="Total Expenses"
+          value={summary.totalExpenses}
+          icon={<DollarSign className="w-6 h-6 text-blue-600" />}
+        />
+        <SummaryCard
+          title="This Month"
+          value={summary.monthlyExpenses}
+          icon={<Calendar className="w-6 h-6 text-blue-600" />}
+        />
+        <SummaryCard
+          title="Total Transactions"
+          value={expenses.length.toString()}
+          icon={<TrendingUp className="w-6 h-6 text-blue-600" />}
+        />
+      </div>
+
+      {/* Recent Expenses & Top Categories */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Recent Expenses */}
+        <Card title="Recent Expenses">
+          {expenses.length === 0 ? (
+            <div className="text-center py-8">
+              <PieChart className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600 mb-4">No expenses recorded yet</p>
+              <Button onClick={() => router.push('/add')}>
+                Add Your First Expense
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {expenses
+                .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                .slice(0, 5)
+                .map(expense => (
+                  <div
+                    key={expense.id}
+                    className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                  >
+                    <div className="flex-1">
+                      <p className="font-medium text-gray-900">{expense.description}</p>
+                      <p className="text-sm text-gray-600">{expense.category}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold text-gray-900">
+                        ${expense.amount.toFixed(2)}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        {new Date(expense.date).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              {expenses.length > 5 && (
+                <div className="text-center pt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => router.push('/expenses')}
+                  >
+                    View All Expenses
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+        </Card>
+
+        {/* Top Categories */}
+        <Card title="Top Categories">
+          {summary.topCategories.length === 0 ? (
+            <div className="text-center py-8">
+              <PieChart className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600">No category data available</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {summary.topCategories.map(({ category, amount, percentage }) => (
+                <div key={category} className="flex items-center">
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm font-medium text-gray-900">
+                        {category}
+                      </span>
+                      <span className="text-sm text-gray-600">
+                        ${amount.toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${percentage}%` }}
+                      ></div>
+                    </div>
+                    <span className="text-xs text-gray-500 mt-1">
+                      {percentage.toFixed(1)}% of total
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
+      </div>
     </div>
   );
 }
