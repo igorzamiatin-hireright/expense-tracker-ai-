@@ -1,9 +1,11 @@
 'use client';
 
+import { useState } from 'react';
 import { useExpenses } from '@/hooks/useExpenses';
 import { SummaryCard } from '@/components/SummaryCard';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { ExportModal } from '@/components/modals/ExportModal';
 import { useRouter } from 'next/navigation';
 import {
   DollarSign,
@@ -13,11 +15,11 @@ import {
   TrendingUp,
   Download
 } from 'lucide-react';
-import { exportToCSV } from '@/utils/export';
 
 export default function Dashboard() {
   const { expenses, loading, getSummary } = useExpenses();
   const router = useRouter();
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
   if (loading) {
     return (
@@ -36,12 +38,8 @@ export default function Dashboard() {
 
   const summary = getSummary();
 
-  const handleExport = () => {
-    if (expenses.length === 0) {
-      alert('No expenses to export');
-      return;
-    }
-    exportToCSV(expenses);
+  const handleOpenExportModal = () => {
+    setIsExportModalOpen(true);
   };
 
   return (
@@ -57,11 +55,11 @@ export default function Dashboard() {
         <div className="flex gap-3 mt-4 sm:mt-0">
           <Button
             variant="outline"
-            onClick={handleExport}
+            onClick={handleOpenExportModal}
             disabled={expenses.length === 0}
           >
             <Download className="w-4 h-4 mr-2" />
-            Export CSV
+            Advanced Export
           </Button>
           <Button onClick={() => router.push('/add')}>
             <Plus className="w-4 h-4 mr-2" />
@@ -175,6 +173,13 @@ export default function Dashboard() {
           )}
         </Card>
       </div>
+
+      {/* Export Modal */}
+      <ExportModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        expenses={expenses}
+      />
     </div>
   );
 }
