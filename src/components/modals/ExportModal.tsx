@@ -169,7 +169,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, expen
         setExportStatus('idle');
         onClose();
       }, 2000);
-    } catch (error) {
+    } catch {
       setExportStatus('error');
       setTimeout(() => setExportStatus('idle'), 3000);
     } finally {
