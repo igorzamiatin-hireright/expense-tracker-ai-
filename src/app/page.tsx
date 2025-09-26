@@ -1,9 +1,11 @@
 'use client';
 
+import { useState } from 'react';
 import { useExpenses } from '@/hooks/useExpenses';
 import { SummaryCard } from '@/components/SummaryCard';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { CloudExportHub } from '@/components/cloud/CloudExportHub';
 import { useRouter } from 'next/navigation';
 import {
   DollarSign,
@@ -11,13 +13,14 @@ import {
   PieChart,
   Plus,
   TrendingUp,
-  Download
+  Cloud,
+  Zap
 } from 'lucide-react';
-import { exportToCSV } from '@/utils/export';
 
 export default function Dashboard() {
   const { expenses, loading, getSummary } = useExpenses();
   const router = useRouter();
+  const [isCloudExportOpen, setIsCloudExportOpen] = useState(false);
 
   if (loading) {
     return (
@@ -36,12 +39,8 @@ export default function Dashboard() {
 
   const summary = getSummary();
 
-  const handleExport = () => {
-    if (expenses.length === 0) {
-      alert('No expenses to export');
-      return;
-    }
-    exportToCSV(expenses);
+  const handleOpenCloudExport = () => {
+    setIsCloudExportOpen(true);
   };
 
   return (
@@ -56,12 +55,13 @@ export default function Dashboard() {
         </div>
         <div className="flex gap-3 mt-4 sm:mt-0">
           <Button
-            variant="outline"
-            onClick={handleExport}
+            onClick={handleOpenCloudExport}
             disabled={expenses.length === 0}
+            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
           >
-            <Download className="w-4 h-4 mr-2" />
-            Export CSV
+            <Cloud className="w-4 h-4 mr-2" />
+            Cloud Export
+            <Zap className="w-3 h-3 ml-1 opacity-70" />
           </Button>
           <Button onClick={() => router.push('/add')}>
             <Plus className="w-4 h-4 mr-2" />
@@ -175,6 +175,13 @@ export default function Dashboard() {
           )}
         </Card>
       </div>
+
+      {/* Cloud Export Hub */}
+      <CloudExportHub
+        isOpen={isCloudExportOpen}
+        onClose={() => setIsCloudExportOpen(false)}
+        expenses={expenses}
+      />
     </div>
   );
 }
