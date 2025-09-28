@@ -23,6 +23,9 @@
 # misc
 .DS_Store
 *.pem
+igorz_github1
+igorz_github1.pub
+*.pub
 
 # debug
 npm-debug.log*
